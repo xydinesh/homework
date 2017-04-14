@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: homework-frontend
+  labels:
+    app: homework
+    tier: frontend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: homework
+    tier: frontend
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: homework-deployment
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: homework
+        tier: frontend
+    spec:
+      containers:
+      - name: homework-golang
+        image: gcr.io/vertical-jigsaw-164115/homework
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: GET_HOSTS_FROM
+          value: env
+        ports:
+        - containerPort: 8080
+      - name: homework-nginx
+        image: xydinesh/nginx
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+        - name: registrypullsecret
+
